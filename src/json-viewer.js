@@ -4,7 +4,7 @@
 var JSONViewer = (function(document) {
 	var Object_prototype_toString = ({}).toString;
 	var DatePrototypeAsString = Object_prototype_toString.call(new Date);
-	
+
 	/** @constructor */
 	function JSONViewer() {
 		this._dom_container = document.createElement("pre");
@@ -13,7 +13,7 @@ var JSONViewer = (function(document) {
 
 	/**
 	 * Visualise JSON object.
-	 * 
+	 *
 	 * @param {Object|Array} json Input value
 	 * @param {Number} [inputMaxLvl] Process only to max level, where 0..n, -1 unlimited
 	 * @param {Number} [inputColAt] Collapse at level, where 0..n, -1 unlimited
@@ -23,14 +23,14 @@ var JSONViewer = (function(document) {
 		var maxLvl = typeof inputMaxLvl === "number" ? inputMaxLvl : -1; // max level
 		// Collapse at level colAt, where 0..n, -1 unlimited
 		var colAt = typeof inputColAt === "number" ? inputColAt : -1; // collapse at
-		
+
 		this._dom_container.innerHTML = "";
 		walkJSONTree(this._dom_container, jsonValue, maxLvl, colAt, 0);
 	};
 
 	/**
 	 * Get container with pre object - this container is used for visualise JSON data.
-	 * 
+	 *
 	 * @return {Element}
 	 */
 	JSONViewer.prototype.getContainer = function() {
@@ -39,7 +39,7 @@ var JSONViewer = (function(document) {
 
 	/**
 	 * Recursive walk for input value.
-	 * 
+	 *
 	 * @param {Element} outputParent is the Element that will contain the new DOM
 	 * @param {Object|Array} value Input value
 	 * @param {Number} maxLvl Process only to max level, where 0..n, -1 unlimited
@@ -52,7 +52,7 @@ var JSONViewer = (function(document) {
 		if (typeof realValue === "object" && realValue !== null && !isDate) {
 			var isMaxLvl = maxLvl >= 0 && lvl >= maxLvl;
 			var isCollapse = colAt >= 0 && lvl >= colAt;
-			
+
 			var isArray = Array.isArray(realValue);
 			var items = isArray ? realValue : Object.keys(realValue);
 
@@ -65,7 +65,7 @@ var JSONViewer = (function(document) {
 				if (items.length) {
 					rootLink.addEventListener("click", function() {
 						if (isMaxLvl) return;
-
+						rootLink.parentElement.lastElementChild.classList.toggle("collapsed");
 						rootLink.classList.toggle("collapsed");
 						rootCount.classList.toggle("hide");
 
@@ -74,6 +74,7 @@ var JSONViewer = (function(document) {
 					});
 
 					if (isCollapse) {
+						rootLink.parentElement.lastElementChild.classList.add("collapsed");
 						rootLink.classList.add("collapsed");
 						rootCount.classList.remove("hide");
 					}
@@ -127,10 +128,14 @@ var JSONViewer = (function(document) {
 								}
 
 								walkJSONTree(li, item, maxLvl, colAt, lvl + 1);
-								li.appendChild(document.createTextNode(itemIsArray ? "]" : "}"));
-								
+								var spanElement = document.createElement("span");
+								spanElement.className = "closing-element";
+								spanElement.innerText = itemIsArray ? "]" : "}";
+								li.appendChild(spanElement);
+
 								var list = li.querySelector("ul");
 								var itemLinkCb = function() {
+									spanElement.classList.toggle("collapsed");
 									itemLink.classList.toggle("collapsed");
 									itemsCount.classList.toggle("hide");
 									list.classList.toggle("hide");
@@ -184,7 +189,10 @@ var JSONViewer = (function(document) {
 				}
 
 				// root cover
-				outputParent.appendChild(document.createTextNode(isArray ? "]" : "}"));
+				var spanElement = document.createElement("span");
+				spanElement.className = "closing-element";
+				spanElement.innerText = isArray ? "]" : "}";
+				outputParent.appendChild(spanElement);
 
 				// collapse
 				if (isCollapse) {
@@ -199,7 +207,7 @@ var JSONViewer = (function(document) {
 
 	/**
 	 * Create simple value (no object|array).
-	 * 
+	 *
 	 * @param  {Number|String|null|undefined|Date} value Input value
 	 * @return {Element}
 	 */
@@ -226,7 +234,7 @@ var JSONViewer = (function(document) {
 
 	/**
 	 * Create items count element.
-	 * 
+	 *
 	 * @param  {Number} count Items count
 	 * @return {Element}
 	 */
@@ -240,7 +248,7 @@ var JSONViewer = (function(document) {
 
 	/**
 	 * Create clickable link.
-	 * 
+	 *
 	 * @param  {String} title Link title
 	 * @return {Element}
 	 */
@@ -255,7 +263,7 @@ var JSONViewer = (function(document) {
 
 	/**
 	 * Get correct item|s title for count.
-	 * 
+	 *
 	 * @param  {Number} count Items count
 	 * @return {String}
 	 */
